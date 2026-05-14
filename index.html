@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#00d2ff">
+    <title>Vibes App V5.0</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3670/3670163.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap');
+
+        :root {
+            --primary: #00d2ff;
+            --secondary: #3a7bd5;
+            --dark: #0f2027;
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.12);
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            margin: 0;
+            background: radial-gradient(circle at top right, #162e3a, #0f2027);
+            color: #fff;
+            min-height: 100vh;
+            padding-bottom: 90px;
+            user-select: none;
+        }
+
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 28px;
+        }
+
+        header {
+            position: sticky; top: 0; z-index: 100;
+            padding: 18px 25px; display: flex;
+            justify-content: space-between; align-items: center;
+            border-radius: 0 0 30px 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        header h1 {
+            margin: 0; font-size: 1.7rem; font-weight: 800;
+            background: linear-gradient(45deg, #fff, var(--primary));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        .container { padding: 20px; max-width: 600px; margin: auto; }
+        .media-grid { display: grid; grid-template-columns: 1fr; gap: 25px; }
+        .card { padding: 12px; position: relative; overflow: hidden; }
+        
+        video {
+            width: 100%; border-radius: 20px; background-color: #000;
+            display: block; box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+        }
+
+        .card-info { padding: 15px 10px 5px; display: flex; justify-content: space-between; align-items: center; }
+        .card-info h3 { margin: 0; font-size: 1.05rem; font-weight: 600; opacity: 0.95; }
+        .like-btn { color: #ff4b4b; cursor: pointer; font-size: 1.2rem; transition: 0.3s; }
+
+        .bottom-nav {
+            position: fixed; bottom: 0; width: 100%; height: 80px;
+            display: flex; justify-content: space-around; align-items: center;
+            border-radius: 35px 35px 0 0; z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center;
+            color: rgba(255, 255, 255, 0.3); transition: 0.4s; flex: 1;
+        }
+        .nav-item i { font-size: 1.4rem; margin-bottom: 4px; }
+        .nav-item p { margin: 0; font-size: 0.75rem; font-weight: 700; }
+        .nav-item.active { color: var(--primary); transform: translateY(-8px); }
+
+        .fab-btn {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            width: 68px; height: 68px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #fff; display: flex; justify-content: center; align-items: center;
+            font-size: 1.6rem; box-shadow: 0 12px 25px rgba(0, 210, 255, 0.4);
+            z-index: 1001; border: 5px solid #0f2027; cursor: pointer;
+        }
+
+        .upload-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 2000;
+            display: none; justify-content: center; align-items: center;
+            backdrop-filter: blur(10px);
+        }
+        .upload-modal.active { display: flex; }
+        .upload-box { width: 90%; max-width: 400px; padding: 30px; border-radius: 32px; text-align: center; }
+
+        input[type="text"], select {
+            width: 100%; padding: 14px; margin: 12px 0;
+            border-radius: 15px; border: none; background: rgba(255, 255, 255, 0.08);
+            color: #fff; font-family: 'Cairo'; outline: none;
+        }
+        
+        input[type="file"] {
+            width: 100%; margin: 12px 0; padding: 10px;
+            color: #fff; background: rgba(255, 255, 255, 0.05); border-radius: 15px;
+        }
+
+        .btn-main {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white; border: none; padding: 15px; border-radius: 15px;
+            width: 100%; font-weight: 800; margin-top: 10px; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="glass">
+        <h1>Vibes V5.0 ✨</h1>
+        <div id="online-status"><i class="fa-solid fa-circle-check" style="color: var(--primary);"></i></div>
+    </header>
+
+    <div class="container">
+        <div id="videos" class="tab-content active"><div class="media-grid" id="v-cont"></div></div>
+        <div id="statuses" class="tab-content"><div class="media-grid" id="s-cont"></div></div>
+    </div>
+
+    <div class="upload-modal" id="upModal">
+        <div class="upload-box glass">
+            <h2 style="margin:0 0 20px;">نشر ذكرى جديدة 🎬</h2>
+            
+            <input type="text" id="vTit" placeholder="عنوان الفيديو...">
+            
+            <select id="vTyp">
+                <option value="videos">فيديو (عرضي)</option>
+                <option value="statuses">حالة (طولي)</option>
+            </select>
+            
+            <input type="file" id="vFile" accept="video/mp4,video/x-m4v,video/*">
+            
+            <button class="btn-main" id="upBtn"><i class="fa-solid fa-cloud-arrow-up"></i> رفع الآن</button>
+            
+            <p id="upload-status" style="display:none; color: var(--primary); margin-top: 15px; font-weight: bold;">
+                <i class="fa-solid fa-spinner fa-spin"></i> جاري الرفع... اصبر ثواني
+            </p>
+            
+            <p onclick="closeModal()" style="color:#ff4b4b; cursor:pointer; margin-top:20px; font-weight:bold;">إغلاق</p>
+        </div>
+    </div>
+
+    <div class="fab-btn" onclick="openModal()"><i class="fa-solid fa-plus"></i></div>
+
+    <nav class="bottom-nav glass">
+        <div class="nav-item active" onclick="tab('videos', this)"><i class="fa-solid fa-clapperboard"></i><p>الفيديوهات</p></div>
+        <div style="width:20%"></div>
+        <div class="nav-item" onclick="tab('statuses', this)"><i class="fa-solid fa-bolt"></i><p>الحالات</p></div>
+    </nav>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getDatabase, ref, onValue, push, set } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDoyrNQabdqsX_VGMI8hGTz0DNFRKwcDkg",
+            authDomain: "saldjs-74873.firebaseapp.com",
+            databaseURL: "https://saldjs-74873-default-rtdb.firebaseio.com",
+            projectId: "saldjs-74873",
+            storageBucket: "saldjs-74873.firebasestorage.app",
+            messagingSenderId: "886959197654",
+            appId: "1:886959197654:web:44bc8a27581815accb2877"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').then(() => console.log('PWA Ready!'));
+            });
+        }
+
+        window.tab = (id, el) => {
+            document.querySelectorAll('.tab-content, .nav-item').forEach(x => x.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            el.classList.add('active');
+            window.scrollTo(0,0);
+        };
+
+        window.openModal = () => document.getElementById('upModal').classList.add('active');
+        window.closeModal = () => document.getElementById('upModal').classList.remove('active');
+
+        const draw = (item, isS) => `
+            <div class="card glass">
+                <video controls preload="none" ${isS ? 'style="aspect-ratio:9/16;object-fit:cover"' : ''}>
+                    <source src="${item.url}" type="video/mp4">
+                </video>
+                <div class="card-info">
+                    <h3>${item.title}</h3>
+                    <i class="fa-regular fa-heart like-btn" onclick="this.classList.toggle('fa-solid')"></i>
+                </div>
+            </div>`;
+
+        onValue(ref(db, 'media/videos'), s => {
+            const c = document.getElementById('v-cont'); c.innerHTML = '';
+            if(s.exists()) Object.values(s.val()).reverse().forEach(v => c.innerHTML += draw(v, false));
+        });
+
+        onValue(ref(db, 'media/statuses'), s => {
+            const c = document.getElementById('s-cont'); c.innerHTML = '';
+            if(s.exists()) Object.values(s.val()).reverse().forEach(v => c.innerHTML += draw(v, true));
+        });
+
+        document.getElementById("upBtn").onclick = async () => {
+            const tit = document.getElementById('vTit').value;
+            const typ = document.getElementById('vTyp').value;
+            const fileInput = document.getElementById('vFile');
+            
+            if(!tit) return alert("اكتب عنوان يا حب!");
+            if(fileInput.files.length === 0) return alert("اختار فيديو الأول يا غالي!");
+
+            const file = fileInput.files[0];
+            
+            if(file.size > 150 * 1024 * 1024) {
+                return alert("الفيديو كبير جداً! حاول تخليه أقل من 150 ميجا.");
+            }
+            
+            const statusText = document.getElementById('upload-status');
+            const upBtn = document.getElementById('upBtn');
+            statusText.style.display = 'block';
+            upBtn.style.display = 'none';
+
+            const formData = new FormData();
+            formData.append('reqtype', 'fileupload');
+            formData.append('fileToUpload', file);
+
+            try {
+                const response = await fetch('https://catbox.moe/user/api.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const fileUrl = await response.text(); 
+                
+                if(fileUrl.startsWith("https://")) {
+                    const n = push(ref(db, `media/${typ}`));
+                    await set(n, { title: tit, url: fileUrl, time: Date.now() });
+                    
+                    alert("تم الرفع بنجاح! 🔥");
+                    closeModal();
+                    
+                    document.getElementById('vTit').value = "";
+                    fileInput.value = "";
+                } else {
+                    alert("حصلت مشكلة في السيرفر: " + fileUrl);
+                }
+            } catch (err) {
+                alert("فشل الرفع، اتأكد من النت إن الباقة مخلصتش!");
+                console.error(err);
+            } finally {
+                statusText.style.display = 'none';
+                upBtn.style.display = 'block';
+            }
+        };
+    </script>
+</body>
+</html>
